@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Mô phỏng Tìm Đường Về Nhà - AI Project</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="controls">
+    <select id="mapSelect">
+        <option value="easy">Kịch bản 1: Map A</option>
+        <option value="trap">Kịch bản 2: Map B</option>
+    </select>
+    
+    <div class="input-group" style="display: inline-block; margin: 0 10px;">
+        <label>A:</label>
+        <input type="number" id="startNodeInput" value="1" min="1" max="20" style="width: 40px;">
+        <label>B:</label>
+        <input type="number" id="goalNodeInput" value="19" min="1" max="20" style="width: 40px;">
+    </div>
+
+    <select id="algoSelect">
+        <option value="hc">Hill Climbing (Thường)</option>
+        <option value="hcbt">Hill Climbing + Backtracking</option>
+        <option value="astar">Giải thuật A*</option>
+    </select>
+    <button id="startBtn" class="btn-primary">Bắt đầu mô phỏng</button>
+    <button id="resetBtn" class="btn-secondary">Đặt lại</button>
+</div>
+
+    <div class="main-layout">
+        <canvas id="graphCanvas" width="900" height="600"></canvas>
+        
+        <div class="info-panel">
+            <h3>Thông tin trạng thái</h3>
+            <div id="status">Sẵn sàng...</div>
+            <hr>
+            <div id="stats">
+                <p>Thời gian thực thi: <span id="timeStat">-</span> ms</p>
+                <p>Tổng chi phí: <span id="costStat">-</span></p>
+                <p>Trạng thái: <span id="resultStat">-</span></p>
+            </div>
+            <div class="legend">
+                <p><span class="dot start"></span> Điểm xuất phát (A)</p>
+                <p><span class="dot end"></span> Nhà (B)</p>
+                <p><span class="dot current"></span> Vị trí hiện tại</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/algorithm.js"></script>
+<script src="js/visualizer.js"></script>
+</body>
+</html>
+</body>
+</html>
