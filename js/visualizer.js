@@ -16,7 +16,7 @@ let currentMapKey = document.getElementById('mapSelect').value || 'easy';
 function drawGraph(currentPath = [], currentNodeId = null, deadEnds = new Set()) {
     if (typeof MAPS === 'undefined') return;
 
-    // Lấy giá trị trực tiếp từ ô nhập liệu để cập nhật giao diện ngay lập tức
+    // LẤY GIÁ TRỊ ĐÍCH TỪ INPUT ĐỂ VẼ NHÀ CHO ĐÚNG
     const startInput = parseInt(document.getElementById('startNodeInput').value);
     const goalInput = parseInt(document.getElementById('goalNodeInput').value);
 
@@ -44,7 +44,7 @@ function drawGraph(currentPath = [], currentNodeId = null, deadEnds = new Set())
         const node = nodes[id];
         const idInt = parseInt(id);
 
-        // HIỂN THỊ ĐIỂM KẾT THÚC (B)
+        // THAY ĐỔI Ở ĐÂY: Dùng goalInput thay vì số 19 cứng nhắc
         if (idInt === goalInput) { 
             ctx.drawImage(homeImg, node.x - 25, node.y - 50, 50, 50);
             ctx.fillStyle = "#2c3e50";
@@ -52,24 +52,22 @@ function drawGraph(currentPath = [], currentNodeId = null, deadEnds = new Set())
             ctx.textAlign = "center";
             ctx.fillText("ĐÍCH B", node.x, node.y + 20);
         } 
-        // HIỂN THỊ VỊ TRÍ NGƯỜI (Khi đang chạy)
         else if (idInt === currentNodeId) { 
             ctx.drawImage(personImg, node.x - 20, node.y - 45, 40, 40);
         } 
-        // HIỂN THỊ CÁC NỐT KHÁC
         else {
             ctx.beginPath();
             ctx.arc(node.x, node.y, 15, 0, Math.PI * 2);
 
-            // LOGIC MÀU SẮC DỰA TRÊN INPUT
+            // Dùng startInput để tô màu xanh nốt bắt đầu
             if (idInt === startInput) {
-                ctx.fillStyle = "#2ecc71"; // Màu xanh cho điểm xuất phát A
+                ctx.fillStyle = "#2ecc71"; 
             } else if (deadEnds && deadEnds.has(idInt)) {
-                ctx.fillStyle = "#d63031"; // Màu đỏ cho ngõ cụt
+                ctx.fillStyle = "#d63031"; 
             } else if (currentPath.includes(idInt)) {
-                ctx.fillStyle = "#f1c40f"; // Màu vàng cho đường đã đi
+                ctx.fillStyle = "#f1c40f"; 
             } else {
-                ctx.fillStyle = "#3498db"; // Màu xanh dương mặc định
+                ctx.fillStyle = "#3498db"; 
             }
 
             ctx.fill();
@@ -92,36 +90,61 @@ document.getElementById('mapSelect').onchange = (e) => {
 
 // Xử lý nút START
 document.getElementById('startBtn').onclick = async () => {
-    // Lấy giá trị nhập vào từ người dùng
     const startNode = parseInt(document.getElementById('startNodeInput').value);
     const goalNode = parseInt(document.getElementById('goalNodeInput').value);
     const algoType = document.getElementById('algoSelect').value;
 
-    // Kiểm tra nốt nhập vào có tồn tại trong Map không
     const nodes = MAPS[currentMapKey].nodes;
     if (!nodes[startNode] || !nodes[goalNode]) {
-        alert("Nốt bắt đầu hoặc kết thúc không tồn tại trên bản đồ!");
+        alert("Nốt không tồn tại!");
         return;
     }
 
+    // 1. Khởi tạo trạng thái ban đầu
+    const startTime = performance.now();
     document.getElementById('startBtn').disabled = true;
-    document.getElementById('status').innerText = `Đang tìm đường từ ${startNode} đến ${goalNode}...`;
+    document.getElementById('resultStat').innerText = "Đang chạy...";
+    document.getElementById('timeStat').innerText = "0";
+    document.getElementById('costStat').innerText = "0 km";
 
     let generator;
     if (algoType === 'hc') generator = pureHillClimbing(startNode, goalNode);
     else if (algoType === 'hcbt') generator = hillClimbingWithBacktracking(startNode, goalNode);
     else generator = aStar(startNode, goalNode);
 
+    let lastStep;
     for await (let step of generator) {
-        drawGraph(step.path, step.curr, step.deadEnds);
-        document.getElementById('status').innerText = step.status;
-        document.getElementById('costStat').innerText = (step.path.length * 10) + " km";
+        if (!step) break;
+        lastStep = step;
+
+        // Cập nhật giao diện
+        drawGraph(step.path || [], step.curr, step.deadEnds || new Set());
         
-        await new Promise(r => setTimeout(r, algoType === 'astar' ? 200 : 500));
+        // Cập nhật text trạng thái
+        document.getElementById('status').innerText = step.status;
+        
+        // Cập nhật chi phí (Giả sử mỗi bước là 10km)
+        if (step.path) {
+            document.getElementById('costStat').innerText = (step.path.length * 10) + " km";
+        }
+
+        await new Promise(r => setTimeout(r, algoType === 'astar' ? 150 : 400));
     }
 
+    // 2. Kết thúc: Hiển thị thời gian và kết quả cuối cùng
     const endTime = performance.now();
-    document.getElementById('timeStat').innerText = ((endTime - startTime) / 1000).toFixed(2) + " s";
+    const duration = (endTime - startTime).toFixed(0); // Đổi thành ms theo HTML của bạn
+    
+    document.getElementById('timeStat').innerText = duration;
+    
+    if (lastStep && lastStep.status.includes("THÀNH CÔNG")) {
+        document.getElementById('resultStat').innerText = "Hoàn thành";
+        document.getElementById('resultStat').style.color = "#2ecc71";
+    } else {
+        document.getElementById('resultStat').innerText = "Thất bại/Kẹt";
+        document.getElementById('resultStat').style.color = "#d63031";
+    }
+
     document.getElementById('startBtn').disabled = false;
 };
 
