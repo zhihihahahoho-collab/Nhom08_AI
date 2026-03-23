@@ -2,10 +2,10 @@
  * Hàm Heuristic tính khoảng cách Euclid dựa trên Map đang chọn
  */
 const getHeuristic = (id, goalId) => {
-    // Lấy tọa độ từ Map hiện hành (currentMapKey được định nghĩa trong visualizer.js)
     const nodes = MAPS[currentMapKey].nodes;
-    const n = nodes[id], g = nodes[goalId];
+    const n = nodes[id], g = nodes[goalId]; // goalId này phải là 11 (nếu bạn nhập 11)
     if (!n || !g) return Infinity;
+    // Tính khoảng cách chim bay đến ĐÍCH THẬT (goalId)
     return Math.sqrt((n.x - g.x)**2 + (n.y - g.y)**2);
 };
 
